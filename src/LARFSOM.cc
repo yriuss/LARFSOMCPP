@@ -165,8 +165,9 @@ void LARFSOM::run_by_epoch(const Eigen::MatrixXd& data){
             // in this step only d_s1_s2 is updated
             d_s1_s2 = receptive_field;
 
+            //  ...
         }else{
-            
+            // ...
         }
 
         // Clear necessary data for nexxt iteration
