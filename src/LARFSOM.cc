@@ -249,11 +249,12 @@ double LARFSOM::run_by_epoch(const Eigen::MatrixXd& data){
 
     error = error/nodes.size();
     
-    // Remove disconnected nodes
+    // Remove disconnected nodes and set win counters to zero
     for(int i = nodes.size() - 1; i >= 0; i--)
     {
         if(nodes[i].isAlone())
             remove_node(i);
+        nodes[i].setWinCounter(0);
     }
 
     return error;

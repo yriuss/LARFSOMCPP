@@ -35,6 +35,10 @@ uint Node::getWinCounter(){
     return win_counter;
 }
 
+void Node::getWinCounter(uint value){
+    win_counter = value;
+}
+
 bool Node::check_connections(uint id){
     for(size_t i = 0; i < edge_connections.size(); i++){
         if(edge_connections[i] == id)

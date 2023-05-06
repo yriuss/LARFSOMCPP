@@ -130,9 +130,9 @@ int main(){
     std::cout << "Number of nodes is: " << normalized_segmented_colors.size() << std::endl;
 
     
-
     
-    
+    // PS*: The last steps in the original LARFSOM paper are different from here,
+    // that is, here it's taken a more direct approach, but the system implemented here stills the same.
     for(size_t i = 0; i < outData.rows();i++)
     {
         std::vector<double> dist;
