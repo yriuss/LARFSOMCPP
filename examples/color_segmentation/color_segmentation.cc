@@ -58,6 +58,28 @@ std::vector<std::vector<uint8_t>> getUniqueColors(cv::Mat& img){
     return imgRows;
 }
 
+double euclidean_distance(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2) {
+    double sum = 0;
+    for (int i = 0; i < v1.size(); i++) {
+        sum += pow(v1[i] - v2[i], 2);
+    }
+    return sqrt(sum);
+}
+
+Eigen::MatrixXd matFromCV(const cv::Mat& img) {
+    int rows = img.rows;
+    int cols = img.cols;
+    Eigen::MatrixXd mat(rows, cols);
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            mat(i, j) = img.at<uint8_t>(i, j);
+        }
+    }
+
+    return mat;
+}
+
 int main(){
     // read an example image
     std::string fileName = "../examples/color_segmentation/house.tiff";
@@ -70,7 +92,7 @@ int main(){
 
     // removing repeated colors    
     Eigen::MatrixXd data = vectorToMatrix(getUniqueColors(reshapedImg));
-
+    Eigen::MatrixXd outData = matFromCV(reshapedImg);
 
     // Setting parameters
     double pho = 0.06;
@@ -78,9 +100,9 @@ int main(){
     double epsilon = 0.4;
     double initialNodeQuantity = 2;
     double maxVictoryQuantity = 100;
-    double minError = 1e-04;
+    double minError = 0.4;
     std::cout << "Minimum error: " << minError << std::endl;
-
+    
     LARFSOM larfsom(
         pho, 
         maxActivation, 
@@ -90,7 +112,56 @@ int main(){
         minError
     );
     
+    double maxElement = data.maxCoeff();
+    data/= maxElement;
+    outData/= maxElement;
+
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     larfsom.cluster(data, 100, RANDOM_INIT);
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    std::cout << "Execution time: " << duration.count() << " microseconds" << std::endl;
+
+
+    std::vector<Node> normalized_segmented_colors = larfsom.getNodes();
+
+    std::cout << "Number of nodes is: " << normalized_segmented_colors.size() << std::endl;
+
+    
+
+    
+    
+    for(size_t i = 0; i < outData.rows();i++)
+    {
+        std::vector<double> dist;
+        
+        for(size_t j = 0; j < normalized_segmented_colors.size(); j++)
+            dist.push_back(euclidean_distance(normalized_segmented_colors[j].getWeightVector().transpose(), outData.row(i)));
+        
+        auto min_iter = std::min_element(dist.begin(), dist.end());
+        int min_index = std::distance(dist.begin(), min_iter);
+
+        //std::cout << min_index << std::endl;
+        outData.row(i) << (normalized_segmented_colors[min_index].getWeightVector()*maxElement).transpose();
+        
+    }
+    
+
+    //std::cout << outData << std::endl;
+    cv::Mat outputMat = cv::Mat(img.rows, img.cols, CV_8UC3); // create output matrix
+    
+    std::cout << (uint)outData(0,0) << std::endl;
+    // copy data from input matrix to output matrix
+    for(int i=0; i<img.rows; i++) {
+        for(int j=0; j<img.cols; j++) {
+            outputMat.at<cv::Vec3b>(i,j) = cv::Vec3b((uint)outData(i*img.rows+j,0), (uint)outData(i*img.rows+j,1), (uint)outData(i*img.rows+j,2));
+        }
+    }
+
+
+    cv::imshow("Output Image", outputMat);
 
     cv::waitKey(0);
 

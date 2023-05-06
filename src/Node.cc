@@ -11,7 +11,7 @@ Node::Node(Eigen::VectorXd weight_vector){
 
 Node::Node(Eigen::VectorXd weight_vector, std::vector<uint> edge_connections){
     this->weight_vector = weight_vector;
-    this->edge_conections = edge_conections;
+    this->edge_connections = edge_connections;
 }
 
 void Node::updateNode(Eigen::VectorXd weight_vector){
@@ -49,6 +49,10 @@ void Node::removeConnection(uint id){
         return;
     else
         edge_connections.erase(edge_connections.begin() + id);
+}
+
+bool Node::isAlone(){
+    return edge_connections.empty();
 }
 
 void Node::addConnection(uint id){

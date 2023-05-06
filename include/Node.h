@@ -26,6 +26,7 @@ public:
     void updateNode(Eigen::VectorXd weight_vector, std::vector<uint> edge_connections);
     void winIncrement();
     uint getWinCounter();
+    bool isAlone();
     
     Eigen::VectorXd getWeightVector();
     void addConnection(uint id);
