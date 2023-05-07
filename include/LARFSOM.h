@@ -8,15 +8,17 @@
 #include <chrono>
 
 #define DEBUG 0
+#define ERROR_PRINT 1
 
 #define RANDOM_INIT 0
 #define SEQ_INIT    1
-#define INF         9999999999999999999999999.
+#define INF         999.
 
 class LARFSOM{
 private:
     /// @brief Nodes present in this system.
     std::vector<Node> nodes;
+    std::vector<Node> previous_nodes;
     bool first_cluster_call = true;
     double max_activation;
     uint max_victory_quantity;

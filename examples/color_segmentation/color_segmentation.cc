@@ -96,12 +96,11 @@ int main(){
 
     // Setting parameters
     double pho = 0.06;
-    double maxActivation = 5;
+    double maxActivation = 3;
     double epsilon = 0.4;
     double initialNodeQuantity = 2;
     double maxVictoryQuantity = 100;
-    double minError = 0.4;
-    std::cout << "Minimum error: " << minError << std::endl;
+    double minError = 1e-4;
     
     LARFSOM larfsom(
         pho, 
@@ -113,12 +112,28 @@ int main(){
     );
     
     double maxElement = data.maxCoeff();
-    data/= maxElement;
-    outData/= maxElement;
+    double minElement = data.minCoeff();
+    
+    for(size_t i= 0; i < data.rows(); i++){
+        for(size_t j = 0; j <data.cols(); j++){
+            data(i,j) = (data(i,j) - minElement)/(maxElement-minElement);
+        }
+    }
+    
+    for(size_t i= 0; i < outData.rows(); i++){
+        for(size_t j = 0; j <outData.cols(); j++){
+            outData(i,j) = (outData(i,j) - minElement)/(maxElement-minElement);
+        }
+    }
+
+
+    //data/=maxElement;
+    //outData/=maxElement;
+
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
-    larfsom.cluster(data, 100, RANDOM_INIT);
+    larfsom.cluster(data, 10, RANDOM_INIT);
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
@@ -126,6 +141,7 @@ int main(){
 
 
     std::vector<Node> normalized_segmented_colors = larfsom.getNodes();
+
 
     std::cout << "Number of nodes is: " << normalized_segmented_colors.size() << std::endl;
 
@@ -144,7 +160,12 @@ int main(){
         int min_index = std::distance(dist.begin(), min_iter);
 
         //std::cout << min_index << std::endl;
-        outData.row(i) << (normalized_segmented_colors[min_index].getWeightVector()*maxElement).transpose();
+        Eigen::VectorXd toOutDataRow =normalized_segmented_colors[min_index].getWeightVector();
+
+        for(size_t i= 0; i < normalized_segmented_colors[min_index].getWeightVector().rows(); i++){
+            toOutDataRow(i) = (normalized_segmented_colors[min_index].getWeightVector()(i)*(maxElement-minElement)+minElement);
+        }
+        outData.row(i) << toOutDataRow.transpose();
         
     }
     
@@ -152,7 +173,6 @@ int main(){
     //std::cout << outData << std::endl;
     cv::Mat outputMat = cv::Mat(img.rows, img.cols, CV_8UC3); // create output matrix
     
-    std::cout << (uint)outData(0,0) << std::endl;
     // copy data from input matrix to output matrix
     for(int i=0; i<img.rows; i++) {
         for(int j=0; j<img.cols; j++) {

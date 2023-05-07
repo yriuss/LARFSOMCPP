@@ -35,7 +35,7 @@ uint Node::getWinCounter(){
     return win_counter;
 }
 
-void Node::getWinCounter(uint value){
+void Node::setWinCounter(uint value){
     win_counter = value;
 }
 

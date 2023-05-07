@@ -130,11 +130,11 @@ double LARFSOM::run_by_epoch(const Eigen::MatrixXd& data){
 #endif
         //std::cout << "data" << i+1 << std::endl;
         // Finding best matching units...
-        
         for(size_t j = 0; j < nodes.size(); j++){
             // Same effect to the VectorXd as a push_back in std::vector
             input2nodes_dist.conservativeResize(input2nodes_dist.size() + 1);
             input2nodes_dist[j] = euclidean_distance(data.row(i), nodes[j].getWeightVector());
+            //std::cout << euclidean_distance(data.row(i), nodes[j].getWeightVector()) << std::endl;
         }
 
         // Getting the winner and updating its distance to the possible new node
@@ -142,7 +142,7 @@ double LARFSOM::run_by_epoch(const Eigen::MatrixXd& data){
         
         input2nodes_dist(closest_idx) = INF;
 
-
+        //std::cout << "min_dist: " << euclidean_distance(data.row(i), nodes[closest_idx].getWeightVector()) << std::endl;
         // Getting the second closest node and updating its distance 
         // to the possible new node.
         d_s2_to_new_node = input2nodes_dist.minCoeff(&sec_closest_idx);
@@ -215,13 +215,15 @@ double LARFSOM::run_by_epoch(const Eigen::MatrixXd& data){
         }else{
             uint best_node_win_counter = nodes[closest_idx].getWinCounter();
             Eigen::VectorXd adjust;
+            
             double rho_f;
             
-            if(best_node_win_counter < max_victory_quantity)
-                rho_f = pow(epsilon*rho, static_cast<double>(best_node_win_counter)/max_victory_quantity);
-            else
+            if(best_node_win_counter <= max_victory_quantity)
+                rho_f = epsilon*pow(rho, static_cast<double>(best_node_win_counter)/max_victory_quantity);
+            else   
                 rho_f = epsilon*rho;
             adjust = rho_f*(data.row(i) - nodes[closest_idx].getWeightVector().transpose());
+            //std::cout << "adjust: " << adjust << std::endl;
             nodes[closest_idx].updateNode(nodes[closest_idx].getWeightVector()+adjust);
         }
 
@@ -231,32 +233,41 @@ double LARFSOM::run_by_epoch(const Eigen::MatrixXd& data){
 
     // Calculating error
     double error = 0;
+
+
+#if ERROR_PRINT
+    if(!previous_nodes.empty()){
+        for(size_t ii = 0; ii < previous_nodes.size(); ii++)
+            error += (nodes[ii].getWeightVector()-previous_nodes[ii].getWeightVector()).squaredNorm();
         
-    // idxs to iterate through the nodes
-    uint it1 = nodes.size() - 1;
-    uint it2 = it1 - 1;
-
-
-    Eigen::VectorXd diff_vector;
-
-    for(size_t ii = 0; ii < it2; ii++)
-    {
-        diff_vector = (nodes[it1].getWeightVector() - nodes[it2].getWeightVector());
-        error += diff_vector.squaredNorm();
-        it1--;
-        it2--;
+        for(size_t ii = 0; ii < nodes.size() - previous_nodes.size(); ii++)
+            error += (nodes[previous_nodes.size()+ii].getWeightVector()).squaredNorm();
+        
+        error/=nodes.size();
+        std::cout << "Current Error: " << error << std::endl;
+        if(error < min_error)
+            return error;
+    }else{
+        error = min_error;
     }
-
-    error = error/nodes.size();
+#endif
+    
     
     // Remove disconnected nodes and set win counters to zero
     for(int i = nodes.size() - 1; i >= 0; i--)
     {
-        if(nodes[i].isAlone())
+        if(nodes[i].isAlone()){
             remove_node(i);
+            //std::cout << "passei aqui" << std::endl;
+        }
+            
         nodes[i].setWinCounter(0);
     }
 
+    // Store current nodes in previous nodes to calculate a future error
+    previous_nodes = nodes;
+    
+    
     return error;
 }
 
