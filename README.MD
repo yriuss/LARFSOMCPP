@@ -9,7 +9,7 @@ This repository is a C++ implementation based on the paper "Local adaptive recep
 
 https://github.com/alandefreitas/matplotplusplus
 
-### opencv
+### OpenCV
 
 Tested with OpenCV 4.5.2
 
