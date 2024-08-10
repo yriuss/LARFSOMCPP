@@ -5,10 +5,15 @@ This repository is a C++ implementation based on the paper "Local adaptive recep
 
 ## Requirements
 
+### matplotplusplus
+
 https://github.com/alandefreitas/matplotplusplus
+
+### opencv
 
 Tested with OpenCV 4.5.2
 
+### GeographicLib
 https://github.com/geographiclib/geographiclib.git
 
 
