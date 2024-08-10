@@ -21,6 +21,7 @@ https://github.com/geographiclib/geographiclib.git
 
 ```
 mkdir build
+cd build
 cmake ..
 make
 ./color_segmentation
