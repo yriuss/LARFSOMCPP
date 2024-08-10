@@ -1,7 +1,7 @@
 # LARFSOM++
 ## Description
 
-This repository is a C++ implementation based on the paper "Local adaptive receptive field self-organizing map for image color segmentation".
+This repository is a C++ implementation based on the paper "Local adaptive receptive field self-organizing map for image color segmentation" https://www.sciencedirect.com/science/article/pii/S0262885608002539?casa_token=2J_oglVvwUAAAAAA:QFFSiAgkdzsNCd7hFPyDhmzAUPf613mCv1NnrJdQwCZRE0DGlihHwuy5VEXRDPT4-ON7XaQn_icM.
 
 ## Requirements
 
